@@ -7,12 +7,13 @@ class Historical {
         relations = [],
         recalculate = () => {},
         head = null,
-        tail = null
+        tail = null,
+        reversed = false // tell the data provided is from current to past
     }) {
         // initiate
         this.table = document.querySelector(table);
         this.unique = unique;
-        this.histories = histories.reverse();
+        this.histories = reversed ? histories.reverse() : histories;
         this.columnSettings = columnSettings;
         this.relations = relations;
         this.recalculate = recalculate;
@@ -106,6 +107,7 @@ class Historical {
 
     renderTemplate() {
         const row = TableView.createRow();
+
         // delete button
         const delBtn = TableView.createButton('-', {
             class: 'btn btn-danger w-100',
@@ -126,6 +128,8 @@ class Historical {
             const col = TableView.createColumn(inputElement);
             row.append(col);
         });
+
+        // add button
         const addBtn = TableView.createButton('+', {
             class: 'btn btn-success w-100',
             onclick: () => {
@@ -149,7 +153,6 @@ class Historical {
 
 
         if (this.tail == null && this.head == null) return;
-        
         let row = this.head
         do { // recalculate, sync, rerender rows
             tempData = row.data ? [...tempData, row.data] : tempData;

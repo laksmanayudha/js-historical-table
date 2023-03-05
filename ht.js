@@ -127,6 +127,7 @@ async function createTable(id) {
   const ht = new Historical({
       table: '#ht',
       unique: 'id',
+      reversed: true,
       histories, 
       columnSettings,
       relations,
