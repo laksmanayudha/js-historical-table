@@ -86,20 +86,22 @@ class Historical {
     }
 
     render(row) {
+        row.recalculate();
+        if (row.next) row.next.syncData();
         row.syncView();
         row.beforeRender();
-        this.table.appendChild(row.view);
+        this.table.prepend(row.view);
     }
 
     renderHeader() {
         const row = TableView.createRow();
-        row.appendChild(TableView.createColumn('Hapus', 'th'));
+        row.append(TableView.createColumn('Hapus', 'th'));
         this.columnSettings.forEach(({ title }) => {
             const header = TableView.createColumn(title, 'th');
-            row.appendChild(header);
+            row.append(header);
         });
-        row.appendChild(TableView.createColumn('Tambah', 'th'));
-        this.table.appendChild(row);
+        row.append(TableView.createColumn('Tambah', 'th'));
+        this.table.prepend(row);
     }
 
     renderTemplate() {
@@ -108,7 +110,7 @@ class Historical {
         const delBtn = TableView.createButton('-', {
             class: 'btn btn-danger w-100',
         });
-        row.appendChild(TableView.createColumn(delBtn));
+        row.append(TableView.createColumn(delBtn));
         this.columnSettings.forEach(({ input }) => {
             let inputElement = null;
             if (input.type == 'select') {
@@ -122,7 +124,7 @@ class Historical {
                 inputElement = TableView.setDefaultValue(inputElement, '');
             }
             const col = TableView.createColumn(inputElement);
-            row.appendChild(col);
+            row.append(col);
         });
         const addBtn = TableView.createButton('+', {
             class: 'btn btn-success w-100',
@@ -135,8 +137,8 @@ class Historical {
                 this.tail.insertNext(new Row(this, newData));
             }
         });
-        row.appendChild(TableView.createColumn(addBtn));
-        this.table.appendChild(row);
+        row.append(TableView.createColumn(addBtn));
+        this.table.prepend(row);
     }
 
     draw() {
@@ -145,28 +147,20 @@ class Historical {
         this.len = 0;
         this.table.innerHTML = '';
 
-        // redraw header and template row
-        this.renderHeader();
-        this.renderTemplate();
-
 
         if (this.tail == null && this.head == null) return;
         
         let row = this.head
-        do { // recalculate and sync
-            row.recalculate();
-            if (row.next) row.next.syncData();
-            row = row.next;
-        }while(row);
-
-        
-        row = this.tail;
-        do { // redraw histories data rows
+        do { // recalculate, sync, rerender rows
             tempData = row.data ? [...tempData, row.data] : tempData;
             this.render(row);
             this.increaseLen();
-            row = row.prev;
-        } while (row);
+            row = row.next;
+        }while(row);
+
+        // redraw header and template row
+        this.renderTemplate();
+        this.renderHeader();
 
         this.setData(tempData);
         this.afterDraw();
